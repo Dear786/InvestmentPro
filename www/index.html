@@ -1,1 +1,67 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestmentPro | Premium Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+<div id="pageLoader"><div class="loader-spinner"></div><div class="loader-text">Loading...</div></div>
+<div class="navbar">
+    <div class="nav-container">
+        <div class="logo" onclick="navigateTo('home')">
+            <div class="logo-icon">💰</div>
+            <span class="logo-text">InvestmentPro</span>
+        </div>
+        <div class="nav-links">
+            <a onclick="navigateTo('home')"><i class="fas fa-home"></i> Home</a>
+            <a onclick="checkAuth('invest')"><i class="fas fa-chart-line"></i> Invest</a>
+            <a onclick="checkAuth('deposit')"><i class="fas fa-wallet"></i> Deposit</a>
+            <a onclick="checkAuth('dashboard')"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a onclick="checkAuth('referral')"><i class="fas fa-users"></i> Referral</a>
+            <a onclick="checkAuth('withdraw')"><i class="fas fa-credit-card"></i> Withdraw</a>
+            <a onclick="checkAuth('support')"><i class="fas fa-headset"></i> Support</a>
+            <div id="auth-buttons">
+                <button class="btn-outline btn-sm" onclick="openAuthModal('login')"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+                <button class="btn-primary btn-sm" onclick="openAuthModal('register')"><i class="fas fa-user-plus"></i> Register</button>
+            </div>
+            <div id="user-menu" class="user-menu" style="display:none;">
+                <div class="user-avatar" id="userAvatar" onclick="toggleDropdown(event)">U</div>
+                <div class="dropdown-menu" id="userDropdown">
+                    <a onclick="navigateTo('dashboard');closeDropdown()">📊 Dashboard</a>
+                    <a onclick="navigateTo('deposit');closeDropdown()">💵 Deposit</a>
+                    <a onclick="navigateTo('referral');closeDropdown()">🤝 Referral</a>
+                    <a onclick="navigateTo('withdraw');closeDropdown()">💳 Withdraw</a>
+                    <a onclick="navigateTo('support');closeDropdown()">🎧 Support</a>
+                    <hr><a onclick="logout();closeDropdown()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="main-content">
+<div id="home-page"><div class="section-padding"><div class="container"><div class="hero-grid"><div><div class="hero-badge">⭐ EARN 5% REFERRAL COMMISSION ⭐</div><h1 class="hero-title">Grow Your <span class="gradient-text">Wealth</span></h1><p class="hero-subtitle">Start from $50. Earn daily profits up to 7%!</p><div class="hero-buttons"><button class="btn-invest-now" onclick="checkAuth('invest')"><i class="fas fa-chart-line"></i> Start Investing</button><button class="btn-outline" onclick="checkAuth('deposit')"><i class="fas fa-wallet"></i> Deposit</button></div></div><div class="glass-card" style="padding:30px;text-align:center;"><div style="font-size:60px;">💰</div><h3>Up to 7% Daily Profit</h3></div></div></div></div></div>
+<div id="invest-page" style="display:none;"><div class="section-padding"><div class="container"><h2 class="page-title">Investment <span class="gradient-text">Plans</span></h2><div class="grid-responsive" id="investPlansContainer"></div></div></div></div>
+<div id="deposit-page" style="display:none;"><div class="section-padding"><div class="container"><h2 class="page-title">💵 <span class="gradient-text">Deposit</span> Funds</h2><div id="depositStep1"><div class="glass-card" style="padding:24px;text-align:center;"><h3>Choose Payment Method</h3><div class="payment-methods" style="max-width:600px;margin:20px auto;"></div></div></div><div id="depositStep2" style="display:none;"><div class="grid-responsive"><div class="glass-card" style="padding:24px;"><h3>📋 Instructions</h3><div id="depositInstructionContent"></div></div><div class="glass-card" style="padding:24px;"><h3>📤 Submit Deposit</h3><form id="depositForm" onsubmit="return submitDeposit(event)"><div class="form-group"><label>Amount (USD)</label><input type="number" id="depositAmount" required min="10"></div><div class="form-group"><label>Name</label><input type="text" id="depCustomName"></div><div class="form-group"><label>Sender Number</label><input type="text" id="depCustomSender"></div><div class="form-group"><label>Transaction ID</label><input type="text" id="depCustomTxid" required></div><button type="submit" class="btn-success">Submit</button></form></div></div></div></div></div></div>
+<div id="dashboard-page" style="display:none;"><div class="section-padding"><div class="container"><h2 class="page-title">📊 <span class="gradient-text">Dashboard</span></h2><div class="dashboard-stats"><div class="glass-card stat-card"><div class="stat-value" id="dashBalance">$0</div></div><div class="glass-card stat-card"><div class="stat-value" id="dashProfit">$0</div></div></div></div></div></div>
+<div id="admin-page" style="display:none;"><div class="section-padding"><div class="container"><h2>⚙️ <span class="gradient-text">Admin</span></h2></div></div></div>
+</div>
+<div id="authModal" class="modal"><div class="modal-content glass-card"><h3 id="modalTitle">Sign In</h3><form id="authForm" onsubmit="return handleAuth(event)"><div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div><div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div><button type="submit" class="btn-primary">Continue</button></form></div></div>
+<div class="chat-bubble" onclick="toggleChat()">💬</div>
+<script src="js/firebase-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/deposit.js"></script>
+<script src="js/withdraw.js"></script>
+<script src="js/invest.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/navigation.js"></script>
+</body>
+</html>
