@@ -16,12 +16,14 @@ jobs:
           cp ../config.xml .
           cordova platform add android
           cordova build android --debug
+      - name: Find and Copy APK
+        run: |
           echo "=== LIST APK FILES ==="
           find . -name "*.apk"
           echo "=== COPY APK ==="
-          find . -name "*.apk" -exec cp {} ../InvestmentPro.apk \; -exec echo "Copied: {}" \;
+          find . -name "*.apk" -exec cp {} ./InvestmentPro.apk \;
           echo "=== VERIFY ==="
-          ls -la ../InvestmentPro.apk
+          ls -la InvestmentPro.apk
       - uses: actions/upload-artifact@v4
         with:
           name: InvestmentPro-APK
