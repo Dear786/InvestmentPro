@@ -1,8 +1,0 @@
-{
-  "name": "investmentpro",
-  "version": "1.0.0",
-  "displayName": "InvestmentPro",
-  "cordova": {
-    "platforms": ["android"]
-  }
-}
