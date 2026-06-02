@@ -11,14 +11,17 @@ jobs:
           node-version: '22'
       - run: npm install -g cordova
       - run: |
-          cordova create app com.investmentpro.app "InvestmentPro"
+          mkdir -p app
           cd app
+          cordova create temp com.investmentpro.app "InvestmentPro"
+          cd temp
           rm -rf www
-          cp -r $GITHUB_WORKSPACE/www/* www
-          cp $GITHUB_WORKSPACE/config.xml ./config.xml
+          cp -r ../../www www
+          cp ../../config.xml .
           cordova platform add android
           cordova build android --debug
+          cp platforms/android/app/build/outputs/apk/debug/*.apk ../../../
       - uses: actions/upload-artifact@v4
         with:
           name: InvestmentPro-APK
-          path: app/platforms/android/app/build/outputs/apk/debug/*.apk
+          path: "*.apk"
