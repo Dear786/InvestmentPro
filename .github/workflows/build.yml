@@ -14,8 +14,8 @@ jobs:
           cordova create app com.investmentpro.app "InvestmentPro"
           cd app
           rm -rf www
-          cp -r $GITHUB_WORKSPACE/www www
-          cp $GITHUB_WORKSPACE/config.xml .
+          cp -r $GITHUB_WORKSPACE/www/* www
+          cp $GITHUB_WORKSPACE/config.xml ./config.xml
           cordova platform add android
           cordova build android --debug
       - uses: actions/upload-artifact@v4
