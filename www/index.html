@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvestmentPro | Premium Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body oncontextmenu="return false" ondragstart="return false" onselectstart="return false">
+
+<div id="pageLoader"><div class="loader-spinner"></div><div class="loader-text">Loading...</div></div>
+
+<div class="navbar">
+    <div class="nav-container">
+        <div class="logo" onclick="navigateTo('home')">
+            <div class="logo-icon">💰</div>
+            <span class="logo-text">InvestmentPro</span>
+        </div>
+        <div class="nav-links">
+            <a onclick="navigateTo('home')"><i class="fas fa-home"></i> Home</a>
+            <a onclick="checkAuth('invest')"><i class="fas fa-chart-line"></i> Invest</a>
+            <a onclick="checkAuth('deposit')"><i class="fas fa-wallet"></i> Deposit</a>
+            <a onclick="checkAuth('dashboard')"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a onclick="checkAuth('referral')"><i class="fas fa-users"></i> Referral</a>
+            <a onclick="checkAuth('withdraw')"><i class="fas fa-credit-card"></i> Withdraw</a>
+            <a onclick="checkAuth('support')"><i class="fas fa-headset"></i> Support</a>
+            <div id="auth-buttons">
+                <button class="btn-outline btn-sm" onclick="openAuthModal('login')"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+                <button class="btn-primary btn-sm" onclick="openAuthModal('register')"><i class="fas fa-user-plus"></i> Register</button>
+            </div>
+            <div id="user-menu" class="user-menu" style="display:none;">
+                <div class="user-avatar" id="userAvatar" onclick="toggleDropdown(event)">U</div>
+                <div class="dropdown-menu" id="userDropdown">
+                    <a onclick="navigateTo('dashboard');closeDropdown()">📊 Dashboard</a>
+                    <a onclick="navigateTo('deposit');closeDropdown()">💵 Deposit</a>
+                    <a onclick="navigateTo('referral');closeDropdown()">🤝 Referral</a>
+                    <a onclick="navigateTo('withdraw');closeDropdown()">💳 Withdraw</a>
+                    <a onclick="navigateTo('support');closeDropdown()">🎧 Support</a>
+                    <hr style="border-color:rgba(255,255,255,0.1);margin:4px 0;">
+                    <a onclick="logout();closeDropdown()">🚪 Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="main-content">
+
+<div id="home-page">
+    <div class="section-padding"><div class="container">
+        <div class="hero-grid">
+            <div>
+                <div class="hero-badge">⭐ EARN 5% REFERRAL COMMISSION ⭐</div>
+                <h1 class="hero-title">Grow Your <span class="gradient-text">Wealth</span></h1>
+                <p class="hero-subtitle">Start from $50. Earn daily profits up to 7%!</p>
+                <div class="hero-buttons">
+                    <button class="btn-invest-now" onclick="checkAuth('invest')"><i class="fas fa-chart-line"></i> Start Investing</button>
+                    <button class="btn-outline" onclick="checkAuth('deposit')"><i class="fas fa-wallet"></i> Deposit</button>
+                </div>
+            </div>
+            <div class="glass-card" style="padding:30px;text-align:center;">
+                <div style="font-size:60px;">💰</div>
+                <h3>Up to 7% Daily Profit</h3>
+                <div class="grid-3" style="margin-top:18px;">
+                    <div class="glass-card" style="padding:12px;"><div style="font-size:18px;font-weight:700;color:#10b981;">$50</div></div>
+                    <div class="glass-card" style="padding:12px;"><div style="font-size:18px;font-weight:700;color:#f59e0b;">7%</div></div>
+                    <div class="glass-card" style="padding:12px;"><div style="font-size:18px;font-weight:700;color:#c084fc;">$350</div></div>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div id="invest-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title text-center">Investment <span class="gradient-text">Plans</span></h2>
+        <div class="grid-responsive" id="investPlansContainer"></div>
+    </div></div>
+</div>
+
+<div id="deposit-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title">💵 <span class="gradient-text">Deposit</span> Funds</h2>
+        <div id="depositStep1">
+            <div class="glass-card" style="padding:24px;text-align:center;">
+                <h3><i class="fas fa-credit-card"></i> Choose Payment Method</h3>
+                <div class="payment-methods" style="max-width:600px;margin:20px auto;"></div>
+            </div>
+        </div>
+        <div id="depositStep2" style="display:none;">
+            <div class="grid-responsive">
+                <div class="glass-card" style="padding:24px;">
+                    <h3>📋 Instructions</h3>
+                    <div id="depositInstructionContent"></div>
+                </div>
+                <div class="glass-card" style="padding:24px;">
+                    <h3>📤 Submit Deposit</h3>
+                    <form id="depositForm" onsubmit="return submitDeposit(event)">
+                        <div class="form-group">
+                            <label>Amount (USD)</label>
+                            <input type="number" id="depositAmount" required min="10" oninput="updatePKRAmount()">
+                            <small><span id="pkrAmountDisplay"></span></small>
+                        </div>
+                        <div class="form-group"><label>Your Name</label><input type="text" id="depCustomName"></div>
+                        <div class="form-group"><label>Sender Number</label><input type="text" id="depCustomSender"></div>
+                        <div class="form-group"><label>Transaction ID</label><input type="text" id="depCustomTxid" required></div>
+                        <div class="form-group">
+                            <label>📸 Payment Screenshot</label>
+                            <input type="file" id="depScreenshot" accept="image/*" onchange="handleScreenshotPreview(event)">
+                            <div id="screenshotPreview" style="margin-top:8px;"></div>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button type="button" class="btn-outline" onclick="backToMethods()" style="flex:1;">Back</button>
+                            <button type="submit" class="btn-success" id="depositSubmitBtn" style="flex:2;">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card" style="padding:24px;margin-top:25px;">
+            <h3>📜 Deposit History</h3>
+            <div id="depositHistoryList" style="margin-top:15px;max-height:400px;overflow-y:auto;"></div>
+        </div>
+    </div></div>
+</div>
+
+<div id="dashboard-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title">📊 Your <span class="gradient-text">Dashboard</span></h2>
+        <div class="dashboard-stats">
+            <div class="glass-card stat-card"><div class="stat-value" id="dashBalance">$0.00</div><div class="stat-label">💰 Balance</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" id="dashProfit">$0.00</div><div class="stat-label">📈 Total Profit</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" id="dashInvestments">0</div><div class="stat-label">📊 Active Plans</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" id="dashReferral">$0.00</div><div class="stat-label">🤝 Referral Earnings</div></div>
+        </div>
+        <div class="glass-card" style="padding:22px;">
+            <h3>📈 Active Investments</h3>
+            <div id="investmentsList" style="margin-top:12px;"></div>
+        </div>
+        <div class="glass-card" style="padding:22px;margin-top:20px;">
+            <h3>📋 Daily Earnings</h3>
+            <div id="earningHistoryList" style="margin-top:12px;max-height:200px;overflow-y:auto;"></div>
+        </div>
+    </div></div>
+</div>
+
+<div id="referral-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title">🤝 Referral <span class="gradient-text">Program</span></h2>
+        <div class="grid-responsive">
+            <div class="glass-card" style="padding:24px;">
+                <h3>🔗 Your Referral Link</h3>
+                <div id="referralLink" style="word-break:break-all;background:rgba(0,0,0,0.3);padding:10px;border-radius:8px;margin:10px 0;font-size:12px;">Loading...</div>
+                <button class="btn-success" onclick="copyReferralLink()" style="width:100%;">📋 Copy Link</button>
+            </div>
+            <div class="glass-card" style="padding:24px;">
+                <h3>📊 Referral Stats</h3>
+                <div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;"><span>Total Referrals:</span><span id="totalReferrals" style="color:#c084fc;">0</span></div>
+                    <div style="display:flex;justify-content:space-between;padding:10px 0;"><span>Total Earnings:</span><span id="referralEarnings" style="color:#10b981;">$0.00</span></div>
+                </div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div id="withdraw-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title">💳 <span class="gradient-text">Withdraw</span> Funds</h2>
+        <div class="grid-responsive">
+            <div class="glass-card" style="padding:24px;">
+                <h3>New Withdrawal Request</h3>
+                <div class="form-group"><label>Payment Method</label><div class="payment-methods"></div></div>
+                <form id="withdrawalForm" onsubmit="return submitWithdraw(event)">
+                    <div class="form-group">
+                        <label>Amount (USD)</label>
+                        <input type="number" id="withdrawAmount" required min="10">
+                        <small>Available Balance: <span id="availableBalance">$0.00</span></small>
+                    </div>
+                    <div id="withdrawCustomFields" style="display:none;">
+                        <div class="form-group"><label>Account Holder Name</label><input type="text" id="withdrawName"></div>
+                        <div class="form-group"><label>Account Number</label><input type="text" id="withdrawNumber"></div>
+                    </div>
+                    <button type="submit" class="btn-success" style="width:100%;">✅ Submit Withdrawal</button>
+                </form>
+            </div>
+            <div class="glass-card" style="padding:24px;">
+                <h3>📜 Withdrawal History</h3>
+                <div id="withdrawalHistoryList" style="margin-top:12px;max-height:350px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div id="support-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <h2 class="page-title">🎧 <span class="gradient-text">Support</span></h2>
+        <div class="grid-responsive">
+            <div class="glass-card" style="padding:24px;">
+                <h3>📝 Submit Ticket</h3>
+                <form id="supportForm" onsubmit="return submitTicket(event)">
+                    <div class="form-group"><label>Category</label><select id="ticketSubject" required><option value="">-- Select --</option><option>Deposit Issue</option><option>Withdrawal Issue</option><option>Other</option></select></div>
+                    <div class="form-group"><label>Title</label><input type="text" id="ticketTitle" required></div>
+                    <div class="form-group"><label>Message</label><textarea id="ticketMessage" rows="3" required></textarea></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">📤 Submit Ticket</button>
+                </form>
+            </div>
+            <div class="glass-card" style="padding:24px;">
+                <h3>📋 My Tickets</h3>
+                <div id="ticketsList" style="margin-top:12px;max-height:350px;overflow-y:auto;"></div>
+            </div>
+        </div>
+    </div></div>
+</div>
+
+<div id="admin-page" style="display:none;">
+    <div class="section-padding"><div class="container">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2>⚙️ <span class="gradient-text">Admin Panel</span></h2>
+            <button class="btn-danger btn-sm" onclick="logoutAdmin()">🚪 Exit Admin</button>
+        </div>
+        <div class="grid-3" style="margin-bottom:20px;">
+            <div class="glass-card stat-card"><div class="stat-value" id="adminTotalUsers">0</div><div class="stat-label">👥 Total Users</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" style="color:#3b82f6;" id="adminPendingDeposits">0</div><div class="stat-label">💵 Pending Deposits</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" style="color:#f59e0b;" id="adminPendingWithdrawals">0</div><div class="stat-label">💳 Pending Withdrawals</div></div>
+            <div class="glass-card stat-card"><div class="stat-value" style="color:#10b981;" id="adminTotalInvested">$0</div><div class="stat-label">📈 Total Invested</div></div>
+        </div>
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchAdminTab('users')">👥 Users</button>
+            <button class="admin-tab" onclick="switchAdminTab('deposits')">💵 Deposits</button>
+            <button class="admin-tab" onclick="switchAdminTab('withdrawals')">💳 Withdrawals</button>
+            <button class="admin-tab" onclick="switchAdminTab('tickets')">🎫 Tickets</button>
+            <button class="admin-tab" onclick="switchAdminTab('investments')">📈 Investments</button>
+            <button class="admin-tab" onclick="switchAdminTab('referrals')">🤝 Referrals</button>
+            <button class="admin-tab" onclick="switchAdminTab('chats')">💬 Live Chats</button>
+            <button class="admin-tab" onclick="switchAdminTab('settings')">⚙️ Settings</button>
+            <button class="admin-tab" onclick="switchAdminTab('paymethods')">💲 Pay Methods</button>
+            <button class="admin-tab" onclick="switchAdminTab('withdrawmethods')">💳 Withdraw Methods</button>
+            <button class="admin-tab" onclick="switchAdminTab('plans')">📊 Plans</button>
+        </div>
+        <div id="admin-users-tab" class="admin-tab-content"></div>
+        <div id="admin-deposits-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-withdrawals-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-tickets-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-investments-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-referrals-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-chats-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-settings-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-paymethods-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-withdrawmethods-tab" class="admin-tab-content" style="display:none;"></div>
+        <div id="admin-plans-tab" class="admin-tab-content" style="display:none;"></div>
+    </div></div>
+</div>
+
+</div>
+
+<footer><p>© 2025 InvestmentPro</p></footer>
+
+<div id="authModal" class="modal">
+    <div class="modal-content glass-card">
+        <button class="close-modal" onclick="closeAuthModal()">&times;</button>
+        <h3 id="modalTitle">Sign In</h3>
+        <form id="authForm" onsubmit="return handleAuth(event)">
+            <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>
+            <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required minlength="6"></div>
+            <div class="form-group" id="confirmPasswordField" style="display:none;"><label>Confirm Password</label><input type="password" id="loginConfirmPassword"></div>
+            <button type="submit" class="btn-primary" style="width:100%;">Continue</button>
+            <p style="margin-top:12px;text-align:center;font-size:12px;">
+                <span id="toggleAuthText"></span> <a href="#" onclick="toggleAuthMode(event)" style="color:#c084fc;">Sign up</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<div id="alertContainer"></div>
+
+<div class="chat-bubble" onclick="toggleChat()">💬</div>
+<div class="chat-window" id="chatWindow">
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:12px;display:flex;justify-content:space-between;align-items:center;">
+        <span><strong>💬 Live Chat</strong></span>
+        <div>
+            <small id="chatOnlineStatus" style="color:#10b981;margin-right:8px;font-size:10px;"></small>
+            <button onclick="toggleChat()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;">✕</button>
+        </div>
+    </div>
+    <div id="chatMessages" style="height:250px;overflow-y:auto;padding:12px;">
+        <div style="text-align:center;color:#94a3b8;font-size:11px;">👋 Welcome to Live Chat</div>
+    </div>
+    <div style="display:flex;padding:8px;border-top:1px solid rgba(255,255,255,0.1);">
+        <input type="text" id="chatInput" placeholder="Type your message..." style="flex:1;padding:8px 12px;background:rgba(0,0,0,0.5);border:1px solid rgba(102,126,234,0.4);border-radius:20px;color:#fff;font-size:11px;" onkeypress="if(event.key==='Enter')sendLiveChat()">
+        <button onclick="sendLiveChat()" style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;padding:8px 14px;border-radius:50%;margin-left:6px;cursor:pointer;">➤</button>
+    </div>
+</div>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/deposit.js"></script>
+<script src="js/withdraw.js"></script>
+<script src="js/invest.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/navigation.js"></script>
+
+</body>
+</html>
