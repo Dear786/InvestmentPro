@@ -18,7 +18,7 @@ jobs:
           rm -rf www
           cp -r ../www www
           cp ../config.xml .
-          cordova platform add android
+          cordova platform add android@13.0.0
           cordova build android --debug
       - uses: actions/upload-artifact@v4
         with:
