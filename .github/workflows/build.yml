@@ -22,9 +22,10 @@ jobs:
           cp ../config.xml .
           cordova platform add android@13.0.0
           cordova build android --debug
-          mkdir -p ../output
-          cp platforms/android/app/build/outputs/apk/debug/*.apk ../output/ 2>/dev/null || true
+          ls platforms/android/app/build/outputs/apk/debug/
+          cp platforms/android/app/build/outputs/apk/debug/app-debug.apk ../InvestmentPro.apk
+          ls -la ../
       - uses: actions/upload-artifact@v4
         with:
           name: InvestmentPro-APK
-          path: output/*.apk
+          path: "*.apk"
