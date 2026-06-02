@@ -6,27 +6,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: npm install -g cordova
-      - run: |
-          cordova create myapp com.investmentpro.app "InvestmentPro"
-          cd myapp
+      - name: Build
+        run: |
+          npm install -g cordova
+          cordova create app com.investmentpro.app "InvestmentPro"
+          cd app
           rm -rf www
           cp -r ../www www
           cp ../config.xml .
           cordova platform add android
-          cd platforms/android
-          ./gradlew assembleDebug
-          cd ../..
-          find myapp -name "*.apk" -exec cp {} ./InvestmentPro.apk \;
-          ls -la InvestmentPro.apk
+          cordova build android --debug
+          cp platforms/android/app/build/outputs/apk/debug/app-debug.apk ../InvestmentPro.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: InvestmentPro-APK
+          name: APK
           path: InvestmentPro.apk
